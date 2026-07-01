@@ -1,5 +1,12 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 function PetProfile() {
+  const location = useLocation();
+  const petImage = location.state?.petImage;
+  const petName = location.state?.petName;
+  const petType = location.state?.petType;
+  const breed = location.state?.breed;
+
+
   return (
     <div className="pet-page">
       <aside className="sidebar">
@@ -11,6 +18,7 @@ function PetProfile() {
             <Link to="/home">🏠 Home</Link>
             <Link to="/pets" className="active">🐾 Pets</Link>
             <Link to="/vaccines">💉 Vaccines</Link>
+            <Link to="/health-logs">📋 Health Logs</Link>
             <a>⚙️ Settings</a>
           </nav>
         </div>
@@ -34,14 +42,17 @@ function PetProfile() {
           <section className="pet-left">
             <div className="pet-card">
               <img
-                src="https://images.unsplash.com/photo-1612195583950-b8fd34c87093?w=500"
-                alt="LuLu"
-              />
+                src={
+                petImage ||
+               "https://images.unsplash.com/photo-1612195583950-b8fd34c87093?w=500"
+                  }
+                  alt="LuLu"
+                />
 
               <div className="pet-name-row">
                 <div>
-                  <h1>LuLu</h1>
-                  <span>Dog</span>
+                  <h1>{petName || "LuLu"}</h1>
+                  <span>{petType || "Dog"}</span>
                   <span className="senior">Senior</span>
                 </div>
                 <button className="edit-icon">✎</button>
@@ -53,7 +64,7 @@ function PetProfile() {
 
               <div className="stat-row">
                 <span>🏷️ Breed</span>
-                <b>Cocker Spaniel</b>
+                <b>{breed || "Cocker Spaniel"}</b>
               </div>
 
               <div className="stat-row">

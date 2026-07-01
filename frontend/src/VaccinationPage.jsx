@@ -12,6 +12,7 @@ function VaccinationPage() {
             <Link to="/home">🏠 Home</Link>
             <Link to="/pets">🐾 Pets</Link>
             <Link to="/vaccines" className="active">💉 Vaccines</Link>
+            <Link to="/health-logs">📋 Health Logs</Link>
             <a>⚙️ Settings</a>
           </nav>
         </div>

@@ -451,6 +451,7 @@ footer {
   place-items: center;
   background: #f7e7d8;
   border-radius: 50%;
+
 }
 
 .vaccine-card span {
@@ -1138,15 +1139,13 @@ footer {
 }
 
 .upload-box {
-  height: 180px;
+  height: 250px;
   border: 2px dashed #ead9c7;
   border-radius: 18px;
+  overflow: hidden;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  color: #9a7a5c;
-  margin-bottom: 24px;
 }
 
 .camera-circle {
@@ -1263,25 +1262,22 @@ footer {
   .pet-page,
   .vaccine-page,
   .addpet-page {
-    flex-direction: column;
+    flex-direction: row;
   }
 
   .sidebar {
-    width: 100%;
-    flex-direction: row;
-    align-items: center;
-    padding: 20px;
+    width: 220px;
+    min-height: 100vh;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 30px;
   }
 
   .sidebar nav {
-    flex-direction: row;
-    margin-top: 15px;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .user-box {
-    display: none;
+    flex-direction: column;
+    margin-top: 40px;
+    gap: 20px;
+    flex-wrap: nowrap;
   }
 
   .main-content,
@@ -1289,20 +1285,6 @@ footer {
   .vaccine-main,
   .addpet-page .main-content {
     padding: 30px;
-  }
-
-  .cards,
-  .care-grid,
-  .vaccine-grid {
-    grid-template-columns: 1fr 1fr;
-    display: grid;
-  }
-
-  .content-grid,
-  .pet-layout,
-  .journey-card,
-  .nearby-card {
-    grid-template-columns: 1fr;
   }
 
   .form-card {
@@ -1449,3 +1431,13 @@ footer {
     height: 140px;
   }
 }
+.upload-box {
+  overflow: hidden;
+}
+
+.preview-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+

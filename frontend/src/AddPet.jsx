@@ -1,18 +1,62 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  FaHome,
-  FaPaw,
-  FaSyringe,
-  FaCog,
   FaCamera,
   FaBell,
   FaUserCircle,
 } from "react-icons/fa";
 
-
 function AddPet() {
-    const [birthday, setBirthday] = useState("");
+  const [birthday, setBirthday] = useState("");
+  const [petName, setPetName] = useState("");
+const [petType, setPetType] = useState("Dog");
+const [breed, setBreed] = useState("");
+  const [preview, setPreview] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const navigate = useNavigate();
+  const handleSavePet = async () => {
+  const res = await fetch("http://127.0.0.1:5000/api/pets", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      user_id: 1,
+      name: petName,
+      type: petType,
+      breed: breed,
+      birthday: birthday,
+      weight: null,
+      photo: preview,
+    }),
+  });
+
+  if (res.ok) {
+    navigate("/pet-profile", {
+      state: {
+    petImage: preview,
+    petName: petName,
+    petType: petType,
+    breed: breed,
+      },
+    });
+  } else {
+    alert("Lưu thất bại");
+  }
+};
+
+  const handleUploadClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleChooseFile = (e) => {
+    const file = e.target.files[0];
+
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+    }
+  };
 
   const handleBirthday = (e) => {
     let value = e.target.value.replace(/\D/g, "");
@@ -25,14 +69,12 @@ function AddPet() {
     let month = value.slice(2, 4);
     let year = value.slice(4, 8);
 
-    // Giới hạn ngày 01-31
     if (day.length === 2) {
       let d = parseInt(day);
       if (d < 1) day = "01";
       if (d > 31) day = "31";
     }
 
-    // Giới hạn tháng 01-12
     if (month.length === 2) {
       let m = parseInt(month);
       if (m < 1) month = "01";
@@ -46,30 +88,37 @@ function AddPet() {
 
     setBirthday(formatted);
   };
-const navigate = useNavigate();
+  const handleDiscardDraft = () => {
+  setPetName("");
+  setPetType("Dog");
+  setBreed("");
+  setBirthday("");
+  setPreview(null);
+};
+
   return (
     <div className="addpet-page">
-<aside className="sidebar">
-  <div>
-    <h2>Pawsitive</h2>
-    <p>Pet Care Dashboard</p>
+      <aside className="sidebar">
+        <div>
+          <h2>Pawsitive</h2>
+          <p>Pet Care Dashboard</p>
 
-    <nav>
-      <Link to="/home">🏠 Home</Link>
-      <Link to="/pets" className="active">🐾 Pets</Link>
-      <Link to="/vaccines">💉 Vaccines</Link>
-      <a>⚙️ Settings</a>
-    </nav>
-  </div>
+          <nav>
+            <Link to="/home">🏠 Home</Link>
+            <Link to="/pets" className="active">🐾 Pets</Link>
+            <Link to="/vaccines">💉 Vaccines</Link>
+            <a>⚙️ Settings</a>
+          </nav>
+        </div>
 
-  <div className="user-box">
-    <span>🐶</span>
-    <div>
-      <b>Alex Rivera</b>
-      <p>Pet Parent</p>
-    </div>
-  </div>
-</aside>
+        <div className="user-box">
+          <span>🐶</span>
+          <div>
+            <b>Alex Rivera</b>
+            <p>Pet Parent</p>
+          </div>
+        </div>
+      </aside>
 
       <main className="main-content">
         <header className="topbar">
@@ -116,55 +165,83 @@ const navigate = useNavigate();
 
           <label className="label">Pet Portrait</label>
 
-          <div className="upload-box">
-            <div className="camera-circle">
-              <FaCamera />
-            </div>
-            <p>Click to upload photo</p>
-            <small>High quality JPG or PNG, max 5MB</small>
+          <div className="upload-box" onClick={handleUploadClick}>
+            {preview ? (
+              <img src={preview} alt="Pet" className="preview-img" />
+            ) : (
+              <>
+                <div className="camera-circle">
+                  <FaCamera />
+                </div>
+                <p>Click to upload photo</p>
+                <small>High quality JPG or PNG, max 5MB</small>
+              </>
+            )}
+
+            <input
+              type="file"
+              accept="image/png, image/jpeg"
+              ref={fileInputRef}
+              onChange={handleChooseFile}
+              style={{ display: "none" }}
+            />
           </div>
 
           <div className="form-grid">
             <div className="form-group">
               <label>Pet Name</label>
-              <input type="text" placeholder="e.g. Luna" />
+              <input
+                type="text"
+                placeholder="e.g. Luna"
+                value={petName}
+                onChange={(e) => setPetName(e.target.value)}
+                />
             </div>
 
             <div className="form-group">
               <label>Pet Type</label>
               <div className="pet-type">
-                <button className="selected">🐶 Dog</button>
-                <button>🐱 Cat</button>
+                <button onClick={() => setPetType("Dog")} className={petType === "Dog" ? "selected" : ""}>🐶 Dog</button>
+                <button onClick={() => setPetType("Cat")} className={petType === "Cat" ? "selected" : ""}>🐱 Cat</button>
                 <button>—</button>
               </div>
             </div>
 
             <div className="form-group">
               <label>Breed</label>
-              <select>
-                <option>Select breed</option>
-                <option>Golden Retriever</option>
-                <option>Poodle</option>
-                <option>Husky</option>
-              </select>
+                <select value={breed} onChange={(e) => setBreed(e.target.value)}>
+                   <option value="">Select breed</option>
+                   <option value="Golden Retriever">Golden Retriever</option>
+                    <option value="Poodle">Poodle</option>
+                    <option value="Husky">Husky</option>
+                </select>
             </div>
 
-<div className="form-group">
-  <label>Birthday</label>
-
-  <input
-    type="text"
-    placeholder="DD/MM/YYYY"
-    value={birthday}
-    onChange={handleBirthday}
-    maxLength="10"
-  />
-</div>
+            <div className="form-group">
+              <label>Birthday</label>
+              <input
+                type="text"
+                placeholder="DD/MM/YYYY"
+                value={birthday}
+                onChange={handleBirthday}
+                maxLength="10"
+              />
+            </div>
           </div>
 
           <div className="btn-group">
-            <button className="save-btn"onClick={() => navigate("/pet-profile")}>Save Pet →</button>
-            <button className="draft-btn">Discard Draft</button>
+            <button
+               className="save-btn"
+                onClick={handleSavePet}
+              >
+               Save Pet →
+            </button>
+            <button
+            className="draft-btn"
+            onClick={handleDiscardDraft}
+            >
+               Discard Draft
+            </button>
           </div>
         </section>
 

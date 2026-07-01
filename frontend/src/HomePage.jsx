@@ -13,6 +13,7 @@ function HomePage() {
                 <Link to="/home" className="active">🏠 Home</Link>
                 <Link to="/pets">🐾 Pets</Link>
                 <Link to="/vaccines">💉 Vaccines</Link>
+                <Link to="/health-logs">📋 Health Logs</Link>
              <a>⚙️ Settings</a>
           </nav>
         </div>
