@@ -1,0 +1,480 @@
+/* ================= Paws & Vitality — Landing Page =================
+   Dùng chung bảng màu với dashboard (App.css): nâu #8b6b47, be #f7e7d8,
+   kem #f8f5f0 — để trang giới thiệu và các trang còn lại đồng bộ giao diện. */
+
+.lp-page {
+  --lp-brown: #8b6b47;
+  --lp-brown-dark: #6f5537;
+  --lp-cream: #f8f5f0;
+  --lp-peach: #f7e7d8;
+  --lp-orange: #ffd7b0;
+  --lp-text: #4f4a45;
+  --lp-text-soft: #8a7f74;
+  --lp-ink: #2f2a25;
+
+  font-family: "Segoe UI", sans-serif;
+  color: var(--lp-text);
+  background: var(--lp-cream);
+  overflow-x: hidden;
+}
+
+.lp-page section,
+.lp-page header {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 70px 44px;
+}
+
+/* ---------- Nav ---------- */
+.lp-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 22px 44px;
+}
+
+.lp-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: bold;
+  font-size: 20px;
+  color: var(--lp-brown-dark);
+}
+
+.lp-nav-links {
+  display: flex;
+  gap: 34px;
+}
+
+.lp-nav-links a {
+  text-decoration: none;
+  color: var(--lp-text);
+  font-size: 15px;
+}
+
+.lp-nav-links a:hover {
+  color: var(--lp-brown);
+}
+
+.lp-nav-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* ---------- Buttons ---------- */
+.lp-btn-primary,
+.lp-btn-ghost,
+.lp-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 11px 22px;
+  font-weight: bold;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.lp-btn-primary {
+  background: var(--lp-brown);
+  color: white;
+}
+
+.lp-btn-primary:hover {
+  opacity: 0.9;
+}
+
+.lp-btn-ghost {
+  background: transparent;
+  color: var(--lp-brown-dark);
+  border: 1px solid var(--lp-peach);
+}
+
+.lp-btn-ghost:hover {
+  background: var(--lp-peach);
+}
+
+.lp-btn-outline {
+  background: white;
+  color: var(--lp-brown-dark);
+  border: 1px solid #e6ddd2;
+}
+
+.lp-btn-lg {
+  padding: 15px 28px;
+  font-size: 15px;
+}
+
+/* ---------- Hero ---------- */
+.lp-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 50px;
+  align-items: center;
+  padding-top: 40px;
+  padding-bottom: 60px;
+}
+
+.lp-badge {
+  display: inline-block;
+  background: var(--lp-peach);
+  color: var(--lp-brown-dark);
+  font-size: 12px;
+  font-weight: bold;
+  padding: 8px 16px;
+  border-radius: 999px;
+  margin-bottom: 18px;
+}
+
+.lp-hero-text h1 {
+  font-size: 46px;
+  line-height: 1.15;
+  color: var(--lp-ink);
+  margin: 0 0 18px;
+}
+
+.lp-accent {
+  color: var(--lp-brown);
+}
+
+.lp-hero-text p {
+  font-size: 16px;
+  color: var(--lp-text-soft);
+  line-height: 1.6;
+  margin-bottom: 30px;
+  max-width: 460px;
+}
+
+.lp-hero-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.lp-hero-media {
+  position: relative;
+}
+
+.lp-hero-media img {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+  border-radius: 28px;
+  box-shadow: 0 20px 40px rgba(90, 70, 50, 0.15);
+}
+
+.lp-float-card {
+  position: absolute;
+  left: -30px;
+  bottom: -25px;
+  background: white;
+  border-radius: 20px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.lp-float-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #39d353;
+  flex-shrink: 0;
+}
+
+.lp-float-card b {
+  display: block;
+  font-size: 13px;
+  color: var(--lp-ink);
+}
+
+.lp-float-card p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--lp-text-soft);
+}
+
+/* ---------- How it works ---------- */
+.lp-how {
+  text-align: center;
+}
+
+.lp-eyebrow {
+  display: block;
+  color: var(--lp-brown);
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 1.5px;
+  margin-bottom: 10px;
+}
+
+.lp-how h2,
+.lp-split-text h2,
+.lp-cta h2 {
+  font-size: 32px;
+  color: var(--lp-ink);
+  margin: 0 0 44px;
+}
+
+.lp-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+
+.lp-step {
+  background: white;
+  border-radius: 22px;
+  padding: 34px 26px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.lp-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--lp-peach);
+  color: var(--lp-brown-dark);
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.lp-step h3 {
+  margin: 0 0 8px;
+  color: var(--lp-ink);
+  font-size: 17px;
+}
+
+.lp-step p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--lp-text-soft);
+  line-height: 1.5;
+}
+
+/* ---------- Features ---------- */
+.lp-features {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+  padding-top: 0;
+}
+
+.lp-feature-card {
+  background: white;
+  border-radius: 22px;
+  padding: 28px 22px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  text-align: left;
+}
+
+.lp-feature-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--lp-orange);
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+
+.lp-feature-card h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  color: var(--lp-ink);
+}
+
+.lp-feature-card p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--lp-text-soft);
+  line-height: 1.5;
+}
+
+/* ---------- Split / About ---------- */
+.lp-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.lp-split-media img {
+  width: 100%;
+  height: 340px;
+  object-fit: cover;
+  border-radius: 26px;
+  box-shadow: 0 16px 34px rgba(90, 70, 50, 0.12);
+}
+
+.lp-split-text p {
+  color: var(--lp-text-soft);
+  line-height: 1.6;
+  margin: -30px 0 22px;
+}
+
+.lp-checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lp-checklist li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: bold;
+  color: var(--lp-ink);
+  font-size: 14px;
+}
+
+.lp-checklist span {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #d9ffd0;
+  color: #18a64a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* ---------- CTA ---------- */
+.lp-cta {
+  text-align: center;
+  background: var(--lp-orange);
+  border-radius: 32px;
+  max-width: 1180px;
+  margin: 20px auto 60px;
+  padding: 64px 40px;
+}
+
+.lp-cta h2 {
+  margin-bottom: 14px;
+}
+
+.lp-cta p {
+  color: #7a5f43;
+  max-width: 520px;
+  margin: 0 auto 32px;
+}
+
+.lp-cta-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ---------- Footer ---------- */
+.lp-footer {
+  background: #eee9e2;
+  padding: 30px 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.lp-footer p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--lp-text-soft);
+}
+
+.lp-footer-links {
+  display: flex;
+  gap: 22px;
+}
+
+.lp-footer-links a {
+  color: var(--lp-text-soft);
+  text-decoration: none;
+  font-size: 12px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .lp-nav-links {
+    display: none;
+  }
+
+  .lp-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-hero-media {
+    order: -1;
+  }
+
+  .lp-hero-media img {
+    height: 300px;
+  }
+
+  .lp-features {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .lp-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .lp-page section,
+  .lp-page header {
+    padding: 44px 24px;
+  }
+
+  .lp-nav {
+    padding: 18px 24px;
+  }
+
+  .lp-hero-text h1 {
+    font-size: 32px;
+  }
+
+  .lp-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-features {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-float-card {
+    left: 12px;
+    right: 12px;
+    bottom: -20px;
+  }
+
+  .lp-cta {
+    padding: 44px 24px;
+    border-radius: 24px;
+  }
+
+  .lp-footer {
+    flex-direction: column;
+    text-align: center;
+  }
+}

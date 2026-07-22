@@ -1,9 +1,49 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { saveCurrentUser } from "./auth";
+
+const API = "http://127.0.0.1:5000";
 
 function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!email || !password) {
+      setError("Vui lòng nhập email và mật khẩu.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API}/api/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        saveCurrentUser(data);
+        navigate(data.role === "admin" ? "/admin" : "/home");
+      } else {
+        setError(data.error || "Email hoặc mật khẩu không đúng.");
+      }
+    } catch (err) {
+      console.error("Lỗi đăng nhập:", err);
+      setError("Không thể kết nối máy chủ. Vui lòng thử lại.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="page">
@@ -11,97 +51,101 @@ function LoginPage() {
 
         {/* Left Side */}
         <div className="left-panel">
-          <div className="logo">
+          <Link to="/" className="logo">
             🐾 <span>Paws & Vitality</span>
-          </div>
+          </Link>
 
           <div className="image-box">
             <img
               src="https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=500"
-              alt="Dog"
+              alt="Chó"
             />
           </div>
 
-          <h2>Nurturing the bond</h2>
+          <h2>Nuôi dưỡng sự gắn kết</h2>
 
           <p>
-            Manage your pet's vitality with a digital hug.
+            Chăm sóc sức khỏe thú cưng chỉ bằng một cái chạm.
             <br />
-            Simple care for the ones who love you most.
+            Đơn giản cho những người bạn bạn yêu thương nhất.
           </p>
         </div>
 
         {/* Right Side */}
         <div className="right-panel">
-          <h1>Welcome back</h1>
+          <h1>Chào mừng trở lại</h1>
 
           <p className="subtitle">
-            Sign in to continue caring for your pets.
+            Đăng nhập để tiếp tục chăm sóc thú cưng của bạn.
           </p>
 
-          <div className="form-group">
-              <div className="Email">
-            <label>Email Address</label>
+          <form onSubmit={handleSignIn}>
+            <div className="form-group">
+              <label>Địa chỉ Email</label>
+              <div className="input-box">
+                <span>✉️</span>
+                <input
+                  type="email"
+                  placeholder="hello@petowner.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
-            <div className="input-box">
-              <span>✉️</span>
-              <input
-                type="email"
-                placeholder="hello@petowner.com"
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <div className="password-header">
-              <label>Password</label>
-              <a href="#">Forgot Password?</a>
             </div>
 
-            <div className="input-box">
-              <span>🔒</span>
+            <div className="form-group">
+              <div className="password-header">
+                <label>Mật khẩu</label>
+                <Link to="/forgot-password">Quên mật khẩu?</Link>
+              </div>
 
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-              />
+              <div className="input-box">
+                <span>🔒</span>
 
-              <button
-                className="eye-btn"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                👁️
-              </button>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Mật khẩu"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+
+                <button
+                  type="button"
+                  className="eye-btn"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  👁️
+                </button>
+              </div>
             </div>
-          </div>
 
-            <button
-                className="signin-btn"
-                 onClick={() => navigate("/home")}
-            >
-                 Sign In
+            {error && (
+              <p style={{ color: "#c0392b", fontSize: 13, marginBottom: 14 }}>{error}</p>
+            )}
+
+            <button className="signin-btn" type="submit" disabled={loading}>
+              {loading ? "Đang đăng nhập..." : "Đăng nhập"}
             </button>
+          </form>
 
           <div className="divider">
-            <span>OR CONTINUE WITH</span>
+            <span>HOẶC TIẾP TỤC VỚI</span>
           </div>
 
           <div className="social-buttons">
-            <button>Google</button>
-            <button>Facebook</button>
+            <button type="button">Google</button>
+            <button type="button">Facebook</button>
           </div>
 
           <p className="signup-text">
-            Don't have an account? <a href="#">Create a free profile</a>
+            Chưa có tài khoản? <Link to="/signup">Tạo tài khoản miễn phí</Link>
           </p>
         </div>
       </div>
 
       <footer>
-        © 2024 Paws & Vitality. Designed with love for every wag and purr.
+        © 2026 Paws &amp; Vitality. Được tạo nên bằng tình yêu cho mỗi cái vẫy đuôi và tiếng gừ gừ.
       </footer>
-    
-    
     </div>
   );
 }

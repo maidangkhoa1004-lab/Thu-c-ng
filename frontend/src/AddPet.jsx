@@ -1,50 +1,53 @@
 import { useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import {
-  FaCamera,
-  FaBell,
-  FaUserCircle,
-} from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import Sidebar from "./Sidebar";
+import { getCurrentUser } from "./auth";
+
+const PET_TYPE_OPTIONS = [
+  { value: "Dog", label: "🐶 Chó" },
+  { value: "Cat", label: "🐱 Mèo" },
+  { value: "Bird", label: "🐦 Chim" },
+  { value: "Rabbit", label: "🐰 Thỏ" },
+];
 
 function AddPet() {
+  const user = getCurrentUser();
   const [birthday, setBirthday] = useState("");
   const [petName, setPetName] = useState("");
-const [petType, setPetType] = useState("Dog");
-const [breed, setBreed] = useState("");
+  const [petType, setPetType] = useState("Dog");
+  const [breed, setBreed] = useState("");
   const [preview, setPreview] = useState(null);
   const fileInputRef = useRef(null);
 
   const navigate = useNavigate();
   const handleSavePet = async () => {
-  const res = await fetch("http://127.0.0.1:5000/api/pets", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      user_id: 1,
-      name: petName,
-      type: petType,
-      breed: breed,
-      birthday: birthday,
-      weight: null,
-      photo: preview,
-    }),
-  });
-
-  if (res.ok) {
-    navigate("/pet-profile", {
-      state: {
-    petImage: preview,
-    petName: petName,
-    petType: petType,
-    breed: breed,
+    const res = await fetch("http://127.0.0.1:5000/api/pets", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        user_id: user.id,
+        name: petName,
+        type: petType,
+        breed: breed,
+        birthday: birthday,
+        weight: null,
+        photo: preview,
+      }),
     });
-  } else {
-    alert("Lưu thất bại");
-  }
-};
+
+    if (res.ok) {
+      const result = await res.json();
+      localStorage.setItem("currentPetId", result.id);
+
+      navigate("/pet-profile", {
+        state: { petId: result.id },
+      });
+    } else {
+      alert("Lưu thất bại");
+    }
+  };
 
   const handleUploadClick = () => {
     fileInputRef.current.click();
@@ -89,92 +92,70 @@ const [breed, setBreed] = useState("");
     setBirthday(formatted);
   };
   const handleDiscardDraft = () => {
-  setPetName("");
-  setPetType("Dog");
-  setBreed("");
-  setBirthday("");
-  setPreview(null);
-};
+    setPetName("");
+    setPetType("Dog");
+    setBreed("");
+    setBirthday("");
+    setPreview(null);
+  };
 
   return (
     <div className="addpet-page">
-      <aside className="sidebar">
-        <div>
-          <h2>Pawsitive</h2>
-          <p>Pet Care Dashboard</p>
-
-          <nav>
-            <Link to="/home">🏠 Home</Link>
-            <Link to="/pets" className="active">🐾 Pets</Link>
-            <Link to="/vaccines">💉 Vaccines</Link>
-            <a>⚙️ Settings</a>
-          </nav>
-        </div>
-
-        <div className="user-box">
-          <span>🐶</span>
-          <div>
-            <b>Alex Rivera</b>
-            <p>Pet Parent</p>
-          </div>
-        </div>
-      </aside>
+      <Sidebar active="pets" />
 
       <main className="main-content">
         <header className="topbar">
-          <h2>Dashboard</h2>
+          <h2>Bảng điều khiển</h2>
 
           <input
             type="text"
-            placeholder="Search pets or records..."
+            placeholder="Tìm thú cưng hoặc hồ sơ..."
             className="search"
           />
 
           <div className="top-icons">
-            <FaBell />
-            <FaUserCircle />
+            <span>🔔</span>
+            <span>☺️</span>
           </div>
         </header>
 
         <section className="step-section">
           <div className="step active-step">
             <span>1</span>
-            <p>Basic Info</p>
+            <p>Thông tin cơ bản</p>
           </div>
 
           <div className="line"></div>
 
           <div className="step">
             <span>2</span>
-            <p>Health Records</p>
+            <p>Hồ sơ sức khỏe</p>
           </div>
 
           <div className="line"></div>
 
           <div className="step">
             <span>3</span>
-            <p>Confirmation</p>
+            <p>Xác nhận</p>
           </div>
         </section>
 
         <section className="form-card">
-          <h1>Tell us about your new pet</h1>
+          <h1>Hãy cho chúng tôi biết về thú cưng mới của bạn</h1>
           <p className="subtitle">
-            We'll help you keep track of their health, vaccines, and daily joy.
+            Chúng tôi sẽ giúp bạn theo dõi sức khỏe, lịch tiêm chủng và niềm vui hằng ngày của bé.
           </p>
 
-          <label className="label">Pet Portrait</label>
+          <label className="label">Ảnh đại diện thú cưng</label>
 
           <div className="upload-box" onClick={handleUploadClick}>
             {preview ? (
-              <img src={preview} alt="Pet" className="preview-img" />
+              <img src={preview} alt="Thú cưng" className="preview-img" />
             ) : (
               <>
-                <div className="camera-circle">
-                  <FaCamera />
-                </div>
-                <p>Click to upload photo</p>
-                <small>High quality JPG or PNG, max 5MB</small>
+                <div className="camera-circle">📷</div>
+                <p>Bấm để tải ảnh lên</p>
+                <small>Ảnh chất lượng cao định dạng JPG hoặc PNG, tối đa 5MB</small>
               </>
             )}
 
@@ -189,39 +170,64 @@ const [breed, setBreed] = useState("");
 
           <div className="form-grid">
             <div className="form-group">
-              <label>Pet Name</label>
+              <label>Tên thú cưng</label>
               <input
                 type="text"
-                placeholder="e.g. Luna"
+                placeholder="vd. Luna"
                 value={petName}
                 onChange={(e) => setPetName(e.target.value)}
-                />
+              />
             </div>
 
             <div className="form-group">
-              <label>Pet Type</label>
+              <label>Loài</label>
               <div className="pet-type">
-                <button onClick={() => setPetType("Dog")} className={petType === "Dog" ? "selected" : ""}>🐶 Dog</button>
-                <button onClick={() => setPetType("Cat")} className={petType === "Cat" ? "selected" : ""}>🐱 Cat</button>
-                <button>—</button>
+                {PET_TYPE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setPetType(opt.value)}
+                    className={petType === opt.value ? "selected" : ""}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className={!PET_TYPE_OPTIONS.some((o) => o.value === petType) ? "selected" : ""}
+                  onClick={() =>
+                    setPetType((t) => (PET_TYPE_OPTIONS.some((o) => o.value === t) ? "" : t))
+                  }
+                >
+                  Khác
+                </button>
               </div>
+              {!PET_TYPE_OPTIONS.some((o) => o.value === petType) && (
+                <input
+                  type="text"
+                  placeholder="Nhập loài khác..."
+                  value={petType}
+                  onChange={(e) => setPetType(e.target.value)}
+                  style={{ marginTop: 8 }}
+                />
+              )}
             </div>
 
             <div className="form-group">
-              <label>Breed</label>
-                <select value={breed} onChange={(e) => setBreed(e.target.value)}>
-                   <option value="">Select breed</option>
-                   <option value="Golden Retriever">Golden Retriever</option>
-                    <option value="Poodle">Poodle</option>
-                    <option value="Husky">Husky</option>
-                </select>
+              <label>Giống</label>
+              <select value={breed} onChange={(e) => setBreed(e.target.value)}>
+                <option value="">Chọn giống</option>
+                <option value="Golden Retriever">Golden Retriever</option>
+                <option value="Poodle">Poodle</option>
+                <option value="Husky">Husky</option>
+              </select>
             </div>
 
             <div className="form-group">
-              <label>Birthday</label>
+              <label>Ngày sinh</label>
               <input
                 type="text"
-                placeholder="DD/MM/YYYY"
+                placeholder="NN/TT/NNNN"
                 value={birthday}
                 onChange={handleBirthday}
                 maxLength="10"
@@ -231,27 +237,27 @@ const [breed, setBreed] = useState("");
 
           <div className="btn-group">
             <button
-               className="save-btn"
-                onClick={handleSavePet}
-              >
-               Save Pet →
+              className="save-btn"
+              onClick={handleSavePet}
+            >
+              Lưu thú cưng →
             </button>
             <button
-            className="draft-btn"
-            onClick={handleDiscardDraft}
+              className="draft-btn"
+              onClick={handleDiscardDraft}
             >
-               Discard Draft
+              Hủy bản nháp
             </button>
           </div>
         </section>
 
         <footer>
-          <strong>Pawsitive</strong>
+          <strong>🐾 Paws &amp; Vitality</strong>
           <div>
-            <a>Help Center</a>
-            <a>Privacy Policy</a>
-            <a>Terms of Service</a>
-            <a>Emergency Care</a>
+            <a>Trung tâm hỗ trợ</a>
+            <a>Chính sách bảo mật</a>
+            <a>Điều khoản dịch vụ</a>
+            <a>Chăm sóc khẩn cấp</a>
           </div>
         </footer>
       </main>

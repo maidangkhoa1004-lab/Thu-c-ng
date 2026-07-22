@@ -1,0 +1,279 @@
+/* ================= Admin pages =================
+   Dùng chung layout .dashboard / .sidebar / .main-content / .card từ
+   App.css để đồng bộ với phần còn lại của app; chỉ thêm CSS cho những
+   thành phần admin-riêng (bảng, lịch, hàng đợi duyệt) chưa có sẵn. */
+
+.card-trend {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 8px;
+}
+
+.card-trend.up {
+  background: #d9ffd0;
+  color: #18a64a;
+}
+
+.card-trend.down {
+  background: #ffe0e0;
+  color: #c0392b;
+}
+
+/* ---------- Table (User Management) ---------- */
+.adm-table-wrap {
+  background: white;
+  border-radius: 22px;
+  padding: 10px 24px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+}
+
+.adm-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+}
+
+.adm-table th {
+  text-align: left;
+  font-size: 12px;
+  color: #a89c8d;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 16px 10px;
+  border-bottom: 1px solid #f0ece5;
+}
+
+.adm-table td {
+  padding: 16px 10px;
+  border-bottom: 1px solid #f5f1eb;
+  font-size: 14px;
+  color: #4f4a45;
+  vertical-align: middle;
+}
+
+.adm-table tr:last-child td {
+  border-bottom: none;
+}
+
+.adm-user-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.adm-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #f7e7d8;
+  display: grid;
+  place-items: center;
+  font-weight: bold;
+  color: #8b6b47;
+  flex-shrink: 0;
+}
+
+.adm-role-badge {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.adm-role-badge.admin {
+  background: #ffe0b8;
+  color: #9a6a21;
+}
+
+.adm-role-badge.user {
+  background: #d9ffd0;
+  color: #18a64a;
+}
+
+.adm-link-btn {
+  border: none;
+  background: none;
+  color: #8b6b47;
+  font-weight: bold;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.adm-link-btn:hover {
+  text-decoration: underline;
+}
+
+.adm-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 0;
+  font-size: 13px;
+  color: #8a7f74;
+}
+
+.adm-pagination button {
+  border: 1px solid #eee1d3;
+  background: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.adm-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------- Calendar (Appointments) ---------- */
+.adm-calendar {
+  background: white;
+  border-radius: 22px;
+  padding: 22px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.adm-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.adm-cal-header button {
+  border: none;
+  background: #f7f4f1;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.adm-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  text-align: center;
+}
+
+.adm-cal-grid .adm-cal-dow {
+  font-size: 11px;
+  color: #a89c8d;
+  font-weight: bold;
+  padding-bottom: 6px;
+}
+
+.adm-cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 13px;
+  color: #4f4a45;
+  position: relative;
+  cursor: default;
+}
+
+.adm-cal-day.empty {
+  visibility: hidden;
+}
+
+.adm-cal-day.today {
+  background: #f7e7d8;
+  font-weight: bold;
+  color: #8b6b47;
+}
+
+.adm-cal-day .adm-cal-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #8b6b47;
+  margin-top: 3px;
+}
+
+/* ---------- Request list / queue ---------- */
+.adm-queue-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: white;
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.15s ease;
+}
+
+.adm-queue-item.selected {
+  border-color: #8b6b47;
+}
+
+.adm-queue-item h4 {
+  margin: 0 0 3px;
+  font-size: 14px;
+  color: #2f2a25;
+}
+
+.adm-queue-item p {
+  margin: 0;
+  font-size: 12px;
+  color: #8a7f74;
+}
+
+/* ---------- Record detail panel ---------- */
+.adm-detail-panel {
+  background: white;
+  border-radius: 22px;
+  padding: 26px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.adm-detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f5f1eb;
+  font-size: 13px;
+}
+
+.adm-detail-row span:first-child {
+  color: #8a7f74;
+}
+
+.adm-detail-row b {
+  color: #2f2a25;
+}
+
+.adm-empty-state {
+  background: white;
+  border-radius: 22px;
+  padding: 60px 20px;
+  text-align: center;
+  color: #a89c8d;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .adm-cal-grid {
+    gap: 4px;
+  }
+}
+
+@media (max-width: 768px) {
+  .adm-table-wrap {
+    padding: 10px;
+  }
+}
