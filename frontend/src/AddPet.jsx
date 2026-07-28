@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import { getCurrentUser } from "./auth";
 
+const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
+
 const PET_TYPE_OPTIONS = [
   { value: "Dog", label: "🐶 Chó" },
   { value: "Cat", label: "🐱 Mèo" },
@@ -21,7 +23,7 @@ function AddPet() {
 
   const navigate = useNavigate();
   const handleSavePet = async () => {
-    const res = await fetch("http://127.0.0.1:5000/api/pets", {
+    const res = await fetch(`${API}/api/pets`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

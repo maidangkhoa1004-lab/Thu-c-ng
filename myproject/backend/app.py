@@ -1,22 +1,32 @@
+import os
 from functools import wraps
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
-import pyodbc
+import psycopg2
+from psycopg2.extras import NamedTupleCursor
 from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
 
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
 
 def get_connection():
-    return pyodbc.connect(
-        "DRIVER={ODBC Driver 18 for SQL Server};"
-        "SERVER=localhost\\SQLEXPRESS02;"
-        "DATABASE=PetCareDB;"
-        "Trusted_Connection=yes;"
-        "TrustServerCertificate=yes;"
+    if DATABASE_URL:
+        # Production (Neon/Postgres cloud) — connection string đầy đủ
+        return psycopg2.connect(DATABASE_URL, cursor_factory=NamedTupleCursor)
+
+    # Local dev — Postgres chạy trên máy, cấu hình qua các biến riêng lẻ
+    return psycopg2.connect(
+        host=os.environ.get("DB_HOST", "localhost"),
+        port=os.environ.get("DB_PORT", "5432"),
+        dbname=os.environ.get("DB_NAME", "petcaredb"),
+        user=os.environ.get("DB_USER", "postgres"),
+        password=os.environ.get("DB_PASSWORD", "postgres"),
+        cursor_factory=NamedTupleCursor,
     )
 
 
@@ -32,11 +42,11 @@ def format_birthday(birthday):
 
 
 def format_appointment_date(value):
-    """Chuẩn hoá chuỗi ngày giờ về dạng SQL Server DATETIME chấp nhận được
-    (tối đa 3 chữ số mili-giây). React <input type=datetime-local> gửi dạng
-    'YYYY-MM-DDTHH:MM', còn giá trị đọc lại từ DB là str(datetime) 6 chữ số
-    mili-giây ('YYYY-MM-DD HH:MM:SS.ffffff') — cả hai đều cần được làm sạch
-    trước khi ghi lại vào DB."""
+    """Chuẩn hoá chuỗi ngày giờ về dạng TIMESTAMP mà Postgres chấp nhận
+    được. React <input type=datetime-local> gửi dạng 'YYYY-MM-DDTHH:MM',
+    còn giá trị đọc lại từ DB là str(datetime) 6 chữ số mili-giây
+    ('YYYY-MM-DD HH:MM:SS.ffffff') — cả hai đều cần được làm sạch trước
+    khi ghi lại vào DB."""
     if not value:
         return None
 
@@ -73,7 +83,7 @@ def require_admin(view_func):
         try:
             conn = get_connection()
             cursor = conn.cursor()
-            cursor.execute("SELECT role FROM users WHERE id=?", (admin_id,))
+            cursor.execute("SELECT role FROM users WHERE id=%s", (admin_id,))
             row = cursor.fetchone()
             conn.close()
         except Exception as e:
@@ -109,7 +119,7 @@ def register():
         conn = get_connection()
         cursor = conn.cursor()
 
-        cursor.execute("SELECT id FROM users WHERE email = ?", (email,))
+        cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
         if cursor.fetchone():
             conn.close()
             return jsonify({"error": "Email này đã được đăng ký"}), 409
@@ -118,7 +128,7 @@ def register():
 
         cursor.execute("""
             INSERT INTO users (full_name, email, password, role, created_at)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
         """, (full_name, email, password_hash, "user", datetime.now()))
 
         conn.commit()
@@ -144,7 +154,7 @@ def login():
         cursor = conn.cursor()
 
         cursor.execute(
-            "SELECT id, full_name, email, password, role FROM users WHERE email = ?",
+            "SELECT id, full_name, email, password, role FROM users WHERE email = %s",
             (email,),
         )
         row = cursor.fetchone()
@@ -175,7 +185,7 @@ def check_email():
 
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT id FROM users WHERE email = ?", (email,))
+        cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
         row = cursor.fetchone()
         conn.close()
 
@@ -204,13 +214,13 @@ def reset_password():
         conn = get_connection()
         cursor = conn.cursor()
 
-        cursor.execute("SELECT id FROM users WHERE email = ?", (email,))
+        cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
         if not cursor.fetchone():
             conn.close()
             return jsonify({"error": "Email này chưa được đăng ký"}), 404
 
         password_hash = generate_password_hash(new_password)
-        cursor.execute("UPDATE users SET password = ? WHERE email = ?", (password_hash, email))
+        cursor.execute("UPDATE users SET password = %s WHERE email = %s", (password_hash, email))
 
         conn.commit()
         conn.close()
@@ -233,7 +243,7 @@ def get_pets():
             cursor.execute("""
                 SELECT id, user_id, name, type, breed, birthday, weight, photo
                 FROM pets
-                WHERE user_id = ?
+                WHERE user_id = %s
             """, (user_id,))
         else:
             cursor.execute("""
@@ -280,8 +290,8 @@ def add_pet():
 
         cursor.execute("""
             INSERT INTO pets (user_id, name, type, breed, birthday, weight, photo)
-            OUTPUT INSERTED.id
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
         """, (
             user_id,
             name,
@@ -312,8 +322,8 @@ def update_pet(pet_id):
 
         cursor.execute("""
             UPDATE pets
-            SET name=?, type=?, breed=?, birthday=?, weight=?, photo=?
-            WHERE id=?
+            SET name=%s, type=%s, breed=%s, birthday=%s, weight=%s, photo=%s
+            WHERE id=%s
         """, (
             data.get("name"),
             data.get("type"),
@@ -341,11 +351,11 @@ def delete_pet(pet_id):
 
         # Các bảng liên quan không có ON DELETE CASCADE trong DB, nên phải
         # tự xóa dữ liệu con trước để tránh lỗi ràng buộc khóa ngoại.
-        cursor.execute("DELETE FROM health_logs WHERE pet_id=?", (pet_id,))
-        cursor.execute("DELETE FROM vaccinations WHERE pet_id=?", (pet_id,))
-        cursor.execute("DELETE FROM medical_records WHERE pet_id=?", (pet_id,))
-        cursor.execute("DELETE FROM appointments WHERE pet_id=?", (pet_id,))
-        cursor.execute("DELETE FROM pets WHERE id=?", (pet_id,))
+        cursor.execute("DELETE FROM health_logs WHERE pet_id=%s", (pet_id,))
+        cursor.execute("DELETE FROM vaccinations WHERE pet_id=%s", (pet_id,))
+        cursor.execute("DELETE FROM medical_records WHERE pet_id=%s", (pet_id,))
+        cursor.execute("DELETE FROM appointments WHERE pet_id=%s", (pet_id,))
+        cursor.execute("DELETE FROM pets WHERE id=%s", (pet_id,))
 
         conn.commit()
         conn.close()
@@ -354,8 +364,6 @@ def delete_pet(pet_id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
 
 
 @app.route("/api/vaccinations", methods=["GET"])
@@ -370,14 +378,14 @@ def get_vaccinations():
         cursor.execute("""
             SELECT id, pet_id, vaccine_name, due_date, administered_date, status, note
             FROM vaccinations
-            WHERE pet_id = ?
+            WHERE pet_id = %s
         """, (pet_id,))
     elif user_id:
         cursor.execute("""
             SELECT v.id, v.pet_id, v.vaccine_name, v.due_date, v.administered_date, v.status, v.note
             FROM vaccinations v
             JOIN pets p ON v.pet_id = p.id
-            WHERE p.user_id = ?
+            WHERE p.user_id = %s
         """, (user_id,))
     else:
         cursor.execute("""
@@ -409,8 +417,8 @@ def add_vaccination():
 
     cursor.execute("""
         INSERT INTO vaccinations (pet_id, vaccine_name, due_date, administered_date, status, note)
-        OUTPUT INSERTED.id
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s)
+        RETURNING id
     """, (
         data.get("pet_id"),
         data.get("vaccine_name"),
@@ -437,8 +445,8 @@ def update_vaccination(vaccination_id):
 
         cursor.execute("""
             UPDATE vaccinations
-            SET vaccine_name=?, due_date=?, administered_date=?, status=?, note=?
-            WHERE id=?
+            SET vaccine_name=%s, due_date=%s, administered_date=%s, status=%s, note=%s
+            WHERE id=%s
         """, (
             data.get("vaccine_name"),
             data.get("due_date"),
@@ -463,7 +471,7 @@ def delete_vaccination(vaccination_id):
         conn = get_connection()
         cursor = conn.cursor()
 
-        cursor.execute("DELETE FROM vaccinations WHERE id=?", (vaccination_id,))
+        cursor.execute("DELETE FROM vaccinations WHERE id=%s", (vaccination_id,))
 
         conn.commit()
         conn.close()
@@ -487,7 +495,7 @@ def get_health_logs():
             cursor.execute("""
                 SELECT id, pet_id, log_date, weight, activity_steps, meal, mood, symptoms
                 FROM health_logs
-                WHERE pet_id = ?
+                WHERE pet_id = %s
                 ORDER BY log_date DESC, id DESC
             """, (pet_id,))
         elif user_id:
@@ -495,7 +503,7 @@ def get_health_logs():
                 SELECT h.id, h.pet_id, h.log_date, h.weight, h.activity_steps, h.meal, h.mood, h.symptoms
                 FROM health_logs h
                 JOIN pets p ON h.pet_id = p.id
-                WHERE p.user_id = ?
+                WHERE p.user_id = %s
                 ORDER BY h.log_date DESC, h.id DESC
             """, (user_id,))
         else:
@@ -535,7 +543,7 @@ def add_health_log():
 
         cursor.execute("""
             INSERT INTO health_logs (pet_id, log_date, weight, activity_steps, meal, mood, symptoms)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
         """, (
             data.get("pet_id"),
             data.get("log_date") or datetime.now().strftime("%Y-%m-%d"),
@@ -565,8 +573,8 @@ def update_health_log(log_id):
 
         cursor.execute("""
             UPDATE health_logs
-            SET log_date=?, weight=?, activity_steps=?, meal=?, mood=?, symptoms=?
-            WHERE id=?
+            SET log_date=%s, weight=%s, activity_steps=%s, meal=%s, mood=%s, symptoms=%s
+            WHERE id=%s
         """, (
             data.get("log_date"),
             data.get("weight"),
@@ -592,7 +600,7 @@ def delete_health_log(log_id):
         conn = get_connection()
         cursor = conn.cursor()
 
-        cursor.execute("DELETE FROM health_logs WHERE id=?", (log_id,))
+        cursor.execute("DELETE FROM health_logs WHERE id=%s", (log_id,))
 
         conn.commit()
         conn.close()
@@ -618,7 +626,7 @@ def admin_stats():
 
         cursor.execute("""
             SELECT COUNT(*) FROM appointments
-            WHERE CAST(appointment_date AS DATE) = CAST(GETDATE() AS DATE)
+            WHERE CAST(appointment_date AS DATE) = CURRENT_DATE
         """)
         today_appointments = cursor.fetchone()[0]
 
@@ -682,7 +690,7 @@ def update_user_role(user_id):
 
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("UPDATE users SET role=? WHERE id=?", (role, user_id))
+        cursor.execute("UPDATE users SET role=%s WHERE id=%s", (role, user_id))
         conn.commit()
         conn.close()
 
@@ -740,8 +748,8 @@ def add_appointment():
 
         cursor.execute("""
             INSERT INTO appointments (pet_id, title, appointment_date, location, note, status)
-            OUTPUT INSERTED.id
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING id
         """, (
             data.get("pet_id"),
             data.get("title"),
@@ -772,8 +780,8 @@ def update_appointment(appointment_id):
 
         cursor.execute("""
             UPDATE appointments
-            SET title=?, appointment_date=?, location=?, note=?, status=?
-            WHERE id=?
+            SET title=%s, appointment_date=%s, location=%s, note=%s, status=%s
+            WHERE id=%s
         """, (
             data.get("title"),
             format_appointment_date(data.get("appointment_date")),
@@ -798,7 +806,7 @@ def delete_appointment(appointment_id):
         conn = get_connection()
         cursor = conn.cursor()
 
-        cursor.execute("DELETE FROM appointments WHERE id=?", (appointment_id,))
+        cursor.execute("DELETE FROM appointments WHERE id=%s", (appointment_id,))
 
         conn.commit()
         conn.close()
@@ -826,7 +834,7 @@ def get_my_appointments():
                    p.name AS pet_name, p.type AS pet_type
             FROM appointments a
             JOIN pets p ON a.pet_id = p.id
-            WHERE p.user_id = ?
+            WHERE p.user_id = %s
             ORDER BY a.appointment_date ASC
         """, (user_id,))
 
@@ -905,8 +913,8 @@ def add_medical_record():
 
         cursor.execute("""
             INSERT INTO medical_records (pet_id, title, record_date, description, file_url, status)
-            OUTPUT INSERTED.id
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING id
         """, (
             data.get("pet_id"),
             data.get("title"),
@@ -937,8 +945,8 @@ def update_medical_record(record_id):
 
         cursor.execute("""
             UPDATE medical_records
-            SET status=?
-            WHERE id=?
+            SET status=%s
+            WHERE id=%s
         """, (
             data.get("status"),
             record_id,
@@ -954,4 +962,6 @@ def update_medical_record(record_id):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    debug = os.environ.get("FLASK_DEBUG", "1") == "1"
+    app.run(host="0.0.0.0", port=port, debug=debug)

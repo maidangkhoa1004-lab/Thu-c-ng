@@ -3,7 +3,7 @@ import AdminSidebar from "./AdminSidebar";
 import { getCurrentUser } from "./auth";
 import "./Admin.css";
 
-const API = "http://127.0.0.1:5000";
+const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
 const WEEKDAYS = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import { getCurrentUser } from "./auth";
 
-const API = "http://127.0.0.1:5000";
+const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
 const SERVICES = [
   { icon: "🩺", name: "Khám tổng quát", desc: "Kiểm tra sức khỏe định kỳ" },
